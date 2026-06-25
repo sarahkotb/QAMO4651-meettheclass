@@ -131,17 +131,13 @@
   <div class="card">
     <h2><span class="step">4</span> Commute to campus</h2>
     <p class="note">Each bar is the <strong>probability</strong> a randomly chosen student has that commute
-      (hours, rounded up). The curve is a normal density with the same mean and SD.</p>
+      (hours, rounded up).</p>
     <div class="stats" id="commuteStats" style="display:none">
       <div class="stat"><div class="k">Mean commute</div><div class="v" id="commuteMean">—<small> hr</small></div></div>
       <div class="stat"><div class="k">Std. dev</div><div class="v" id="commuteSd">—<small> hr</small></div></div>
       <div class="stat"><div class="k">Most common</div><div class="v" id="commuteMode">—<small> hr</small></div></div>
     </div>
     <svg id="commuteChart" class="chart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet" style="margin-top:14px"></svg>
-    <div class="legend" id="commuteLegend" style="display:none">
-      <span><span class="sw" style="background:var(--blue)"></span>probability</span>
-      <span><span class="sw" style="background:var(--crimson)"></span>normal density</span>
-    </div>
     <p class="empty" id="commuteEmpty">Waiting for students to submit…</p>
   </div>
 
@@ -564,7 +560,6 @@ function refreshCommute(){
   const vals = records.map(r=>r.commuteHours).filter(v=>Number.isFinite(v));
   const has = vals.length>0;
   $("commuteStats").style.display = has?"flex":"none";
-  $("commuteLegend").style.display = has?"flex":"none";
   $("commuteEmpty").style.display = has?"none":"block";
   if (!has){ clearSvg($("commuteChart")); return; }
   const maxH = Math.max(...vals);
@@ -577,12 +572,7 @@ function refreshCommute(){
   $("commuteMean").innerHTML = `${fmt(m)}<small> hr</small>`;
   $("commuteSd").innerHTML   = `${fmt(sd)}<small> hr</small>`;
   $("commuteMode").innerHTML = `${mode}<small> hr</small>`;
-  // normal density overlay (probability mass with bin width 1 ≈ density)
-  let curve=null, curveMax=0;
-  if (sd>0){
-    curve = cats.map((h,i)=>{ const y=normalPdf((h-m)/sd)/sd; curveMax=Math.max(curveMax,y); return {i,y}; });
-  }
-  pmfChart($("commuteChart"), cats, counts, {color:"#2d2db4", xLabel:"commute (hours, rounded up)", curve, curveMax});
+  pmfChart($("commuteChart"), cats, counts, {color:"#2d2db4", xLabel:"commute (hours, rounded up)"});
 }
 
 function refreshLikert(){
@@ -767,7 +757,7 @@ async function buildReportHTML(){
 
   D.push(`<section><h2><span class="num">4</span> Commute to campus</h2>
     <div class="cards"><div class="c"><span class="k">Mean commute</span><span class="v">${fmt(cMean)} hr</span></div></div>
-    <p class="cap">Probability of each commute length (hours, rounded up); red = matched normal density.</p>
+    <p class="cap">Probability of each commute length (hours, rounded up).</p>
     <div class="chartbox">${svgOuter("commuteChart")}</div></section>`);
 
   D.push(`<section><h2><span class="num">5</span> &ldquo;${cfg.likertStatement}&rdquo;</h2>

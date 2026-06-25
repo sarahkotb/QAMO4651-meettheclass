@@ -41,8 +41,8 @@ window.APP_CONFIG = {
   topShows: 5,                   // how many top shows to chart + show posters for
 
   // -------- Instructor page passcode (SHA-256 hash, NOT the passcode itself) -----
-  // Current passcode: Scrite4
+  // Current passcode: Scrite1
   // To change it, tell Claude the new passcode, or run:
   //   echo -n "YOUR PASSCODE" | shasum -a 256
-  instructorPasscodeHash: "e69f04e3d0d60e85d7f47133b5c3059276b9d38eb805124f761c28e8c7233ced"
+  instructorPasscodeHash: "b7751d67986ca67b3984d2107797a55373b0bfe8ede2710ed986f58da7dd7294"
 };
