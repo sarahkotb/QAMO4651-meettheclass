@@ -36,10 +36,10 @@
       <input type="text" id="country" list="countries" autocomplete="off" placeholder="e.g. United States" style="width:100%">
     </div>
 
-    <div class="field">
-      <label for="state">Home state / province / region</label>
+    <div class="field" id="stateField" style="display:none">
+      <label for="state">Home state</label>
       <input type="text" id="state" list="usstates" autocomplete="off" placeholder="e.g. Utah" style="width:100%">
-      <p class="hint">If you're from the U.S., your state (e.g. Utah). Otherwise your province or region.</p>
+      <p class="hint">Your U.S. state (e.g. Utah).</p>
     </div>
 
     <div class="field">
@@ -111,6 +111,21 @@ const likertBox = $("likert");
   likertBox.appendChild(lab);
 });
 
+// Show the "Home state" field only when the country is the United States.
+function isUS(v){
+  const n = window.PLACES ? PLACES.normalize(v) : (v||"").toLowerCase().trim();
+  return (window.PLACES?.COUNTRY_ALIASES?.[n]) === "United States of America"
+      || n === "united states of america";
+}
+function updateStateVisibility(){
+  const us = isUS($("country").value);
+  $("stateField").style.display = us ? "block" : "none";
+  if (!us) $("state").value = "";
+}
+$("country").addEventListener("input", updateStateVisibility);
+$("country").addEventListener("change", updateStateVisibility);
+updateStateVisibility();
+
 if (!cfg || cfg.firebase.apiKey === "PASTE_ME"){
   $("closedMsg").textContent = "⚠️ This page isn't configured yet (config.js). Tell your instructor.";
 }
@@ -158,7 +173,8 @@ if (db){
 
 function fillFormFrom(a){
   $("country").value = a.country || "";
-  $("state").value   = a.state || "";
+  updateStateVisibility();
+  if (isUS(a.country)) $("state").value = a.state || "";
   $("show").value    = a.show || "";
   $("commute").value = (a.commuteHours ?? "");
   [...likertBox.children].forEach(c => {
