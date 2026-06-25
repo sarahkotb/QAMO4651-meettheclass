@@ -1,0 +1,75 @@
+rules_version = '2';
+// QAMO 4651 — ONE rules file for the whole semester. Publish once.
+//
+//  control/<activityId> : the live on/off switch for each weekly activity.
+//  responses/*          : every activity's anonymous submissions live here, tagged
+//                         with an `activity` field. Each doc is owned by an
+//                         anonymous sign-in, so a student can edit their OWN answer
+//                         but nobody else's. New weekly activities need NO rules
+//                         changes — they just use a new `activity` id.
+//
+//  submissions/*        : LEGACY — the original Screen Time app. Left unchanged so
+//                         that app keeps working. New apps should use responses/*.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- Generic live-control switch (one doc per activity) ----
+    match /control/{activityId} {
+      allow read: if true;
+      allow write: if request.resource.data.open is bool
+                   && request.resource.data.section is string
+                   && request.resource.data.day is string;
+    }
+
+    // ---- Generic anonymous responses for ALL activities ----
+    match /responses/{doc} {
+      allow read: if true;
+
+      function ctrl(a){ return get(/databases/$(database)/documents/control/$(a)); }
+      function isOpen(a){
+        return exists(/databases/$(database)/documents/control/$(a))
+               && ctrl(a).data.open == true;
+      }
+      function validEnvelope(d){
+        return d.activity is string && d.activity.size() >= 1 && d.activity.size() <= 40
+            && d.section is string
+            && d.day is string
+            && d.uid is string
+            && d.answers is map;
+      }
+
+      // Create: signed in, form open for that activity, section matches the live one,
+      // the doc is stamped with the caller's own uid, and the envelope is well-formed.
+      allow create: if request.auth != null
+                    && validEnvelope(request.resource.data)
+                    && request.resource.data.uid == request.auth.uid
+                    && isOpen(request.resource.data.activity)
+                    && request.resource.data.section == ctrl(request.resource.data.activity).data.section;
+
+      // Edit: only the owner, only while open, with activity + uid unchanged.
+      allow update: if request.auth != null
+                    && validEnvelope(request.resource.data)
+                    && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == resource.data.uid
+                    && request.resource.data.activity == resource.data.activity
+                    && isOpen(request.resource.data.activity);
+
+      allow delete: if false;
+    }
+
+    // ---- LEGACY: Screen Time app (unchanged; uses control/session above) ----
+    match /submissions/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.section in ['001','002']
+                    && request.resource.data.minutes is int
+                    && request.resource.data.minutes >= 0
+                    && request.resource.data.minutes <= 1440
+                    && request.resource.data.day is string
+                    && exists(/databases/$(database)/documents/control/session)
+                    && get(/databases/$(database)/documents/control/session).data.open == true
+                    && request.resource.data.section == get(/databases/$(database)/documents/control/session).data.section;
+      allow update, delete: if false;
+    }
+  }
+}

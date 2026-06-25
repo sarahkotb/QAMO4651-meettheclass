@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meet the Class — QAMO 4651</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="titlebar">
+  <h1>Meet the Class</h1>
+  <p class="sub">First day &middot; QAMO 4651</p>
+</div>
+
+<div class="wrap" style="max-width:540px">
+
+  <!-- Shown when the instructor hasn't opened the form (or has closed it) -->
+  <div class="card" id="closedCard" style="text-align:center">
+    <h2 style="justify-content:center">⏸ Not live</h2>
+    <p class="note" id="closedMsg">Connecting…</p>
+  </div>
+
+  <!-- The submission form (only while the instructor has it open) -->
+  <div class="card" id="formCard" style="display:none">
+    <h2 id="formTitle">Tell us about yourself</h2>
+    <p class="pill" id="sectionBanner" style="margin:0 0 12px">Section &mdash;</p>
+
+    <div class="banner anon">🔒 <strong>This is anonymous.</strong> We don't collect your name or
+      any identifying information — just the answers below.</div>
+    <div class="banner warn" id="warnBanner"></div>
+
+    <div class="field">
+      <label for="country">Home country</label>
+      <input type="text" id="country" list="countries" autocomplete="off" placeholder="e.g. United States" style="width:100%">
+    </div>
+
+    <div class="field">
+      <label for="state">Home state / province / region</label>
+      <input type="text" id="state" list="usstates" autocomplete="off" placeholder="e.g. Utah" style="width:100%">
+      <p class="hint">If you're from the U.S., your state (e.g. Utah). Otherwise your province or region.</p>
+    </div>
+
+    <div class="field">
+      <label for="show">Favorite TV show</label>
+      <input type="text" id="show" autocomplete="off" maxlength="80" placeholder="e.g. The Office" style="width:100%">
+      <p class="hint">If you're stuck, think of one of your top 5 favorite shows recently.</p>
+    </div>
+
+    <div class="field">
+      <label for="commute">How long is your commute to campus?</label>
+      <input type="number" id="commute" min="0" max="12" step="1" placeholder="e.g. 1" style="width:100%">
+      <p class="hint">In hours, rounded <strong>up</strong> to the next whole hour (a 35-minute commute → 1).</p>
+    </div>
+
+    <div class="field">
+      <label style="margin-bottom:8px">How much do you agree: <strong>&ldquo;<span id="likertStmt">I feel good about this class</span>&rdquo;</strong></label>
+      <div class="likert" id="likert"></div>
+    </div>
+
+    <button class="btn" id="submitBtn" style="width:100%; padding:13px; margin-top:4px">Submit</button>
+    <p id="msg" class="note" style="margin-top:12px; min-height:1.2em"></p>
+  </div>
+
+  <!-- Confirmation after a successful submission -->
+  <div class="card" id="thanksCard" style="display:none; text-align:center">
+    <h2 style="justify-content:center">✅ You're in!</h2>
+    <p class="note">Thanks — your answers are part of the class picture now.</p>
+    <p class="pill" id="liveCount">&hellip;</p>
+    <p class="note" style="margin-top:16px">Look up at the projector to watch the class take shape. 🌍📺</p>
+    <button class="btn ghost" id="editBtn" style="margin-top:6px">✏️ Edit my answers</button>
+    <p class="note" style="font-size:.82rem; margin-top:14px">One entry per device — editing updates your existing answer.</p>
+  </div>
+
+</div>
+
+<!-- country suggestions -->
+<datalist id="countries"></datalist>
+<datalist id="usstates"></datalist>
+
+<script src="config.js"></script>
+<script src="moderation.js"></script>
+<script src="places.js"></script>
+<script type="module">
+import * as Core from "./core.js";
+
+const cfg = window.APP_CONFIG;
+const $ = id => document.getElementById(id);
+const show = el => el.style.display = "block";
+const hide = el => el.style.display = "none";
+const ACT = cfg.activity || "activity";
+
+// Fill the datalists (suggestions only — students can type anything)
+$("countries").innerHTML = (window.PLACES?.countries || []).map(c => `<option value="${c}">`).join("");
+$("usstates").innerHTML  = (window.PLACES?.usStates || []).map(s => `<option value="${s}">`).join("");
+$("likertStmt").textContent = cfg.likertStatement || "I feel good about this class";
+
+// Build the Likert scale from config
+const likertBox = $("likert");
+(cfg.likertScale || []).forEach(o => {
+  const lab = document.createElement("label");
+  lab.className = "opt"; lab.dataset.value = o.value;
+  lab.innerHTML = `<input type="radio" name="likert" value="${o.value}">
+    <span class="face">${o.face || ""}</span><span class="txt">${o.label}</span>`;
+  lab.addEventListener("click", () => {
+    [...likertBox.children].forEach(c => c.classList.remove("sel"));
+    lab.classList.add("sel");
+    lab.querySelector("input").checked = true;
+  });
+  likertBox.appendChild(lab);
+});
+
+if (!cfg || cfg.firebase.apiKey === "PASTE_ME"){
+  $("closedMsg").textContent = "⚠️ This page isn't configured yet (config.js). Tell your instructor.";
+}
+
+let db, auth, uid = null;
+try { const f = Core.initFirebase(cfg); db = f.db; auth = f.auth; } catch (e) {}
+
+let session = null;       // { open, section, day } from the instructor
+let myAnswer = null;      // this device's existing answers map (for editing)
+let countUnsub = null;
+
+function render(){
+  const open = !!(session && session.open === true);
+  if (!open){
+    hide($("formCard")); hide($("thanksCard")); show($("closedCard"));
+    $("closedMsg").textContent = session ? "This is not live at the moment." : "Connecting…";
+    return;
+  }
+  hide($("closedCard"));
+  $("sectionBanner").textContent = "Section " + session.section;
+  if (myAnswer){
+    hide($("formCard")); show($("thanksCard"));
+    if (!countUnsub) startLiveCount();
+  } else {
+    show($("formCard")); hide($("thanksCard"));
+  }
+}
+
+// Sign in anonymously so each device owns (and can edit) exactly one answer.
+if (auth){
+  Core.signInDevice(auth).then(async u => {
+    uid = u;
+    const data = await Core.loadMyResponse(db, ACT, uid);   // existing doc or null
+    myAnswer = data ? data.answers : null;
+    render();
+  }).catch(e => {
+    $("closedMsg").textContent = "⚠️ Couldn't connect (anonymous sign-in is off). Tell your instructor.";
+  });
+}
+
+// Watch the instructor's open/close switch in real time
+if (db){
+  Core.watchControl(db, ACT, s => { session = s; render(); });
+}
+
+function fillFormFrom(a){
+  $("country").value = a.country || "";
+  $("state").value   = a.state || "";
+  $("show").value    = a.show || "";
+  $("commute").value = (a.commuteHours ?? "");
+  [...likertBox.children].forEach(c => {
+    const on = Number(c.dataset.value) === a.likert;
+    c.classList.toggle("sel", on);
+    c.querySelector("input").checked = on;
+  });
+}
+
+$("editBtn").addEventListener("click", () => {
+  if (myAnswer) fillFormFrom(myAnswer);
+  $("formTitle").textContent = "Edit your answers";
+  myAnswerEditing = true;
+  hide($("thanksCard")); show($("formCard"));
+});
+let myAnswerEditing = false;
+
+function selectedLikert(){
+  const r = likertBox.querySelector("input:checked");
+  return r ? Number(r.value) : null;
+}
+
+function flagWarning(text){
+  const b = $("warnBanner");
+  b.innerHTML = "⚠️ " + text;
+  b.style.display = "block";
+  b.scrollIntoView({behavior:"smooth", block:"center"});
+}
+function clearWarning(){ $("warnBanner").style.display = "none"; }
+
+$("submitBtn").addEventListener("click", async () => {
+  const msg = $("msg");
+  clearWarning();
+  if (!session || session.open !== true){ render(); return; }
+  if (!uid){ msg.textContent = "Still connecting… try again in a second."; return; }
+
+  const country = $("country").value.trim();
+  const state   = $("state").value.trim();
+  const showVal = $("show").value.trim();
+  const commute = Number($("commute").value);
+  const likert  = selectedLikert();
+
+  // --- required fields ---
+  if (!country){ msg.textContent = "Please enter your home country."; return; }
+  if (!showVal){ msg.textContent = "Please enter a favorite TV show."; return; }
+  if (!Number.isFinite(commute) || $("commute").value.trim() === ""){
+    msg.textContent = "Please enter your commute in hours."; return; }
+  if (commute < 0 || commute > (cfg.maxCommuteHours || 12)){
+    msg.textContent = `Please enter a commute between 0 and ${cfg.maxCommuteHours || 12} hours.`; return; }
+  if (!likert){ msg.textContent = "Please pick how much you agree with the statement."; return; }
+
+  // --- content moderation (block explicit / crass / vulgar / sexual wording) ---
+  const bad = window.MODERATION.firstHit([country, state, showVal]);
+  if (bad){
+    flagWarning("Please keep your responses appropriate for class. We blocked a word that looked "
+      + "explicit, crass, or vulgar — edit your answer and try again.");
+    msg.textContent = "";
+    return;
+  }
+
+  $("submitBtn").disabled = true;
+  msg.textContent = "Submitting…";
+  const answers = { country, state, show: showVal, commuteHours: Math.round(commute), likert };
+  try {
+    await Core.saveMyResponse(db, { activity: ACT, uid, section: session.section, day: session.day, answers });
+    myAnswer = answers;
+    myAnswerEditing = false;
+    msg.textContent = "";
+    $("submitBtn").disabled = false;
+    $("formTitle").textContent = "Tell us about yourself";
+    startLiveCount();
+    render();
+  } catch (e) {
+    msg.textContent = "Hmm, that didn't go through. The form may have just closed — check the projector.";
+    $("submitBtn").disabled = false;
+  }
+});
+
+function startLiveCount(){
+  if (countUnsub) countUnsub();
+  countUnsub = Core.watchResponses(db, ACT, recs => {
+    const n = recs.filter(r => r.section === session.section && r.day === session.day).length;
+    $("liveCount").textContent = `${n} student${n===1?"":"s"} in section ${session.section} so far`;
+  });
+}
+</script>
+</body>
+</html>

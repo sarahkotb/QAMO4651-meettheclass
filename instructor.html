@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instructor — Meet the Class — QAMO 4651</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="titlebar">
+  <span class="course">QAMO 4651 &middot; Principles of Econometrics</span>
+  <h1>Meet the Class</h1>
+  <p class="sub">First day &middot; <span class="mathy">Instructor view</span></p>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== Controls ===== -->
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="section">Section going live</label>
+        <select id="section"><option value="1">Section 1</option><option value="2">Section 2</option></select>
+      </div>
+      <div>
+        <label for="day">Class day</label>
+        <input type="date" id="day">
+      </div>
+      <div>
+        <label><input type="checkbox" id="allDays"> all days</label>
+      </div>
+      <div style="flex:1"></div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn ghost" id="qrToggle">📱 Student link &amp; QR</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn crimson" id="pdfBtn">📄 Download PDF report</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn ghost" id="downloadBtn">Raw data (.md)</button>
+      </div>
+    </div>
+    <p class="note" id="status" style="margin-top:14px">Connecting…</p>
+
+    <hr class="soft">
+    <div class="row" style="align-items:center">
+      <div>
+        <label>Student form</label>
+        <button class="btn" id="openBtn">🟢 Open form for Section 1</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn crimson" id="stopBtn">⏹ Close submissions</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <span id="formStatus" class="pill">checking…</span>
+      </div>
+      <div style="flex:1"></div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn ghost" id="testDataBtn">🧪 Load test data (rehearsal)</button>
+      </div>
+    </div>
+    <p class="note" style="margin-top:8px">Pick the <strong>Section</strong> above, then <strong>Open</strong>.
+      Students don't choose a section — you set which one is live. When closed, students see
+      <em>"This is not live at the moment."</em></p>
+  </div>
+
+  <!-- ===== Student link & QR (collapsible) ===== -->
+  <div class="card" id="qrCard" style="display:none">
+    <h2>Student link &amp; QR code</h2>
+    <p class="note">Students scan this to submit. The QR points to wherever this page is published —
+      download it and drop it onto your slide.</p>
+    <div class="row" style="align-items:center">
+      <div style="text-align:center">
+        <canvas id="qrCanvas" width="320" height="320" style="border:1px solid var(--line); border-radius:10px"></canvas>
+        <div><button class="btn ghost" id="qrDownload" style="margin-top:10px">Download QR (PNG)</button></div>
+      </div>
+      <div style="flex:1; min-width:220px">
+        <label>Student URL</label>
+        <input type="text" id="studentUrl" readonly style="width:100%; font-size:.9rem">
+        <p class="note" style="margin-top:10px">Open this on your phone to test it.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 1: Where we're from — world ===== -->
+  <div class="card">
+    <h2><span class="step">1</span> Where we're from — the world</h2>
+    <p class="note">Every student's <strong>home country</strong>. Darker = more students from there.</p>
+    <div class="mapwrap"><svg id="worldMap" viewBox="0 0 760 380" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <div class="maplegend" id="worldLegend"></div>
+    <div class="chips" id="countryChips"></div>
+    <p class="empty" id="worldEmpty">Waiting for students to submit…</p>
+  </div>
+
+  <!-- ===== 2: Where we're from — states ===== -->
+  <div class="card">
+    <h2><span class="step">2</span> Where we're from — U.S. states</h2>
+    <p class="note">Home <strong>state</strong> for students from the United States. Darker = more students.</p>
+    <div class="mapwrap"><svg id="stateMap" viewBox="0 0 760 470" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <div class="maplegend" id="stateLegend"></div>
+    <div class="chips" id="stateChips"></div>
+    <p class="empty" id="stateEmpty">Waiting for students to submit…</p>
+  </div>
+
+  <!-- ===== 3: Favorite shows ===== -->
+  <div class="card">
+    <h2><span class="step">3</span> Favorite TV shows</h2>
+    <p class="note">Spellings are auto-grouped so near-duplicates count together. Showing the
+      <strong>top 15</strong>; everything else is pooled into <strong>Other</strong>.</p>
+    <div class="stats" id="showStats" style="display:none">
+      <div class="stat"><div class="k">Responses</div><div class="v" id="showN">—</div></div>
+      <div class="stat"><div class="k">Distinct shows</div><div class="v" id="showDistinct">—</div></div>
+      <div class="stat compare"><div class="k">Most popular</div><div class="v" id="showTop" style="font-size:1.1rem">—</div></div>
+      <div class="stat compare"><div class="k"><span class="mathy">P</span>(most popular)</div><div class="v" id="showTopP">—</div></div>
+    </div>
+    <svg id="showChart" class="chart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet" style="margin-top:14px"></svg>
+    <p class="note" id="showPosterNote" style="margin:14px 0 0; display:none">Top 5 shows:</p>
+    <div class="shows" id="showPosters"></div>
+    <p class="empty" id="showEmpty">Waiting for students to submit…</p>
+  </div>
+
+  <!-- ===== 4: Commute distribution ===== -->
+  <div class="card">
+    <h2><span class="step">4</span> Commute to campus</h2>
+    <p class="note">Each bar is the <strong>probability</strong> a randomly chosen student has that commute
+      (hours, rounded up). The curve is a normal density with the same mean and SD.</p>
+    <div class="stats" id="commuteStats" style="display:none">
+      <div class="stat"><div class="k">Mean commute</div><div class="v" id="commuteMean">—<small> hr</small></div></div>
+      <div class="stat"><div class="k">Std. dev</div><div class="v" id="commuteSd">—<small> hr</small></div></div>
+      <div class="stat"><div class="k">Most common</div><div class="v" id="commuteMode">—<small> hr</small></div></div>
+    </div>
+    <svg id="commuteChart" class="chart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet" style="margin-top:14px"></svg>
+    <div class="legend" id="commuteLegend" style="display:none">
+      <span><span class="sw" style="background:var(--blue)"></span>probability</span>
+      <span><span class="sw" style="background:var(--crimson)"></span>normal density</span>
+    </div>
+    <p class="empty" id="commuteEmpty">Waiting for students to submit…</p>
+  </div>
+
+  <!-- ===== 5: Likert ===== -->
+  <div class="card">
+    <h2><span class="step">5</span> &ldquo;<span id="likertStmt">I feel good about this class</span>&rdquo;</h2>
+    <p class="note">Each bar is the <strong>probability</strong> of each response on the 5-point agreement scale.</p>
+    <div class="stats" id="likertStats" style="display:none">
+      <div class="stat"><div class="k">Mean (1–5)</div><div class="v" id="likertMean">—</div></div>
+      <div class="stat"><div class="k">Agree or better</div><div class="v" id="likertAgree">—</div></div>
+      <div class="stat"><div class="k">Responses</div><div class="v" id="likertN">—</div></div>
+    </div>
+    <svg id="likertChart" class="chart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet" style="margin-top:14px"></svg>
+    <p class="empty" id="likertEmpty">Waiting for students to submit…</p>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="moderation.js"></script>
+<script src="places.js"></script>
+<script>
+/* Instructor passcode gate. Plaintext is never stored — only its SHA-256 hash. */
+(function(){
+  const hash = (window.APP_CONFIG && window.APP_CONFIG.instructorPasscodeHash) || "";
+  if (!hash) return;
+  if (sessionStorage.getItem("instr_ok") === "1") return;
+  async function sha256hex(s){
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+  }
+  const g = document.createElement("div");
+  g.id = "gate";
+  g.style.cssText = "position:fixed;inset:0;background:#f4f5fb;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',system-ui,sans-serif";
+  g.innerHTML = `
+    <div style="background:#fff;border:1px solid #e3e4f0;border-radius:14px;padding:28px 30px;max-width:360px;width:90%;box-shadow:0 6px 24px rgba(20,20,60,.12);text-align:center">
+      <h2 style="color:#1f1f8a;margin:0 0 6px">Instructor access</h2>
+      <p style="color:#5b5b78;font-size:.9rem;margin:0 0 16px">Enter the passcode to open the dashboard.</p>
+      <input id="gatePass" type="password" placeholder="Passcode" autofocus style="width:100%;padding:10px 12px;border:1px solid #e3e4f0;border-radius:9px;font:inherit">
+      <p id="gateErr" style="color:#c8102e;font-size:.82rem;min-height:1.1em;margin:8px 0 0"></p>
+      <button id="gateBtn" style="margin-top:10px;width:100%;padding:11px;border:0;border-radius:10px;background:#2d2db4;color:#fff;font:inherit;font-weight:600;cursor:pointer">Enter</button>
+    </div>`;
+  const add = () => { document.body.prepend(g); wire(); };
+  if (document.body) add(); else document.addEventListener("DOMContentLoaded", add);
+  function wire(){
+    const inp = g.querySelector("#gatePass"), err = g.querySelector("#gateErr");
+    async function tryUnlock(){
+      const h = await sha256hex(inp.value);
+      if (h === hash){ sessionStorage.setItem("instr_ok","1"); g.remove(); }
+      else { err.textContent = "Incorrect passcode."; inp.select(); }
+    }
+    g.querySelector("#gateBtn").addEventListener("click", tryUnlock);
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") tryUnlock(); });
+    inp.focus();
+  }
+})();
+</script>
+
+<script type="module">
+import * as Core from "./core.js";
+import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm";
+import * as topojson from "https://cdn.jsdelivr.net/npm/topojson-client@3/+esm";
+import { geoNaturalEarth1, geoAlbersUsa, geoPath } from "https://cdn.jsdelivr.net/npm/d3-geo@3/+esm";
+
+const cfg = window.APP_CONFIG;
+const P = window.PLACES;
+const $ = id => document.getElementById(id);
+const SVGNS = "http://www.w3.org/2000/svg";
+const ACT = cfg.activity || "activity";
+const TOP_SHOWS_BARS = 15;       // top N shows shown individually; rest → "Other"
+const TOP_SHOWS_POSTERS = cfg.topShows || 5;
+
+const fmt = (x, d=1) => (x==null || !isFinite(x)) ? "—" : x.toLocaleString(undefined,{minimumFractionDigits:d, maximumFractionDigits:d});
+const pct = x => (x==null||!isFinite(x)) ? "—" : (x*100).toFixed(1) + "%";
+const normalPdf = z => Math.exp(-0.5*z*z)/Math.sqrt(2*Math.PI);
+function addEl(parent, tag, attrs, text){
+  const el = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  if (text != null) el.textContent = text;
+  parent.appendChild(el); return el;
+}
+function clearSvg(svg){ while (svg.firstChild) svg.removeChild(svg.firstChild); }
+function blueShade(t){ // t in 0..1 → light lavender to deep Utah blue
+  const a=[224,225,245], b=[31,31,138];
+  const c=a.map((v,i)=> Math.round(v+(b[i]-v)*t));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+$("likertStmt").textContent = cfg.likertStatement || "I feel good about this class";
+
+/* ====================================================================
+   FIREBASE + LIVE DATA
+   ==================================================================== */
+let db, ready=false;
+if (!cfg || cfg.firebase.apiKey === "PASTE_ME"){
+  $("status").textContent = "⚠️ Not configured yet — paste your Firebase config into config.js (see README).";
+} else {
+  try { db = Core.initFirebase(cfg).db; ready=true; }
+  catch(e){ $("status").textContent = "⚠️ Firebase failed to initialize: " + e.message; }
+}
+
+const todayStr = () => { const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+$("day").value = todayStr();
+
+let records = [];     // [{country,state,show,commuteHours,likert,time}]
+let unsub = null;
+
+function subscribe(){
+  if (!ready) return;
+  if (unsub) unsub();
+  $("status").textContent = "Listening for submissions…";
+  unsub = Core.watchResponses(db, ACT, recs => {
+    const section = $("section").value, useAll = $("allDays").checked, day = $("day").value;
+    records = recs
+      .filter(r => r.section === section && (useAll || r.day === day))
+      .map(r => ({ country:r.answers.country||"", state:r.answers.state||"", show:r.answers.show||"",
+        commuteHours: Number(r.answers.commuteHours), likert: Number(r.answers.likert), time:r.time }));
+    refreshAll();
+  }, err => { $("status").textContent = "⚠️ Read error: " + err.message; });
+}
+["section","day"].forEach(id => $(id).addEventListener("change", subscribe));
+$("allDays").addEventListener("change", () => { $("day").disabled = $("allDays").checked; subscribe(); });
+
+/* ---------------- live control: open/close the student form ---------------- */
+function updateOpenLabel(){ $("openBtn").textContent = `🟢 Open form for Section ${$("section").value}`; }
+$("section").addEventListener("change", updateOpenLabel);
+updateOpenLabel();
+const controlDayValue = () => $("allDays").checked ? todayStr() : ($("day").value || todayStr());
+async function writeControl(open){
+  if (!ready){ alert("Not connected to Firebase yet."); return; }
+  try{ await Core.setControl(db, ACT, { open, section:$("section").value, day:controlDayValue() }); }
+  catch(e){ alert("Couldn't update the form status: " + e.message); }
+}
+$("openBtn").addEventListener("click", () => writeControl(true));
+$("stopBtn").addEventListener("click", () => writeControl(false));
+function setStatusPill(open, section, day){
+  const txt = open ? `🟢 OPEN — Section ${section} · ${day}` : "🔴 closed";
+  const el = $("formStatus"); el.textContent = txt;
+  el.style.background = open ? "#d6f5e3" : "#fde2e2";
+  el.style.color      = open ? "#15703f" : "#b3261e";
+}
+if (ready){
+  Core.watchControl(db, ACT, s => setStatusPill(s.open===true, s.section, s.day), () => setStatusPill(false));
+  subscribe();
+}
+
+/* ====================================================================
+   MAPS (loaded once, recolored on each refresh)
+   ==================================================================== */
+const WORLD_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+const US_URL    = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+let worldFeatures = [], usFeatures = [], worldIndex = {}, mapsReady = false;
+
+async function loadMaps(){
+  try{
+    const [w,u] = await Promise.all([fetch(WORLD_URL).then(r=>r.json()), fetch(US_URL).then(r=>r.json())]);
+    const wfc = topojson.feature(w, w.objects.countries);
+    const wproj = geoNaturalEarth1().fitSize([760,380], wfc);
+    const wpath = geoPath(wproj);
+    worldFeatures = wfc.features.filter(f=>f.properties.name!=="Antarctica")
+      .map(f => ({ name:f.properties.name, d:wpath(f) }));
+    worldFeatures.forEach(f => { worldIndex[P.normalize(f.name)] = f.name; });
+
+    const ufc = topojson.feature(u, u.objects.states);
+    const uproj = geoAlbersUsa().fitSize([760,470], ufc);
+    const upath = geoPath(uproj);
+    usFeatures = ufc.features.map(f => ({ name:f.properties.name, d:upath(f) }));
+    mapsReady = true;
+    refreshAll();
+  } catch(e){
+    $("worldEmpty").textContent = "⚠️ Couldn't load the map files (need internet). " + e.message;
+    $("stateEmpty").textContent = "⚠️ Couldn't load the map files (need internet).";
+  }
+}
+loadMaps();
+
+function drawChoropleth(svg, features, counts){
+  clearSvg(svg);
+  const max = Math.max(1, ...Object.values(counts));
+  for (const f of features){
+    const c = counts[f.name] || 0;
+    const fill = c > 0 ? blueShade(0.25 + 0.75*Math.sqrt(c/max)) : "#e7e8f4";
+    const path = addEl(svg, "path", { d:f.d, fill, class: c>0 ? "geo-on" : "geo-zero" });
+    addEl(path, "title", {}, c>0 ? `${f.name}: ${c}` : f.name);
+  }
+}
+function mapLegend(el, max){
+  el.innerHTML = "";
+  if (max <= 0){ el.style.display="none"; return; }
+  el.style.display = "flex";
+  const scale = document.createElement("div"); scale.className="scale";
+  [0.05,0.3,0.55,0.8,1].forEach(t => { const s=document.createElement("span"); s.style.background=blueShade(0.25+0.75*t); scale.appendChild(s); });
+  el.appendChild(Object.assign(document.createElement("span"),{textContent:"fewer"}));
+  el.appendChild(scale);
+  el.appendChild(Object.assign(document.createElement("span"),{textContent:`more (max ${max})`}));
+}
+function renderChips(el, counts, unmatched){
+  el.innerHTML = "";
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  for (const [name,n] of entries){
+    const c = document.createElement("span"); c.className="chip";
+    c.innerHTML = `${name} <span class="n">${n}</span>`; el.appendChild(c);
+  }
+  const ue = Object.entries(unmatched).sort((a,b)=>b[1]-a[1]);
+  for (const [name,n] of ue){
+    const c = document.createElement("span"); c.className="chip unmatched";
+    c.title = "Not found on the map — check spelling";
+    c.innerHTML = `${name} <span class="n">${n}</span>`; el.appendChild(c);
+  }
+}
+
+function refreshMaps(){
+  // countries
+  const cc = {}, ccUn = {};
+  for (const r of records){
+    if (!r.country) continue;
+    const m = mapsReady ? P.matchCountry(r.country, worldIndex) : null;
+    if (m) cc[m] = (cc[m]||0)+1;
+    else { const k = r.country.trim(); ccUn[k] = (ccUn[k]||0)+1; }
+  }
+  const ccMax = Math.max(0, ...Object.values(cc));
+  if (mapsReady) drawChoropleth($("worldMap"), worldFeatures, cc);
+  mapLegend($("worldLegend"), ccMax);
+  renderChips($("countryChips"), cc, ccUn);
+  $("worldEmpty").style.display = records.length ? "none" : "block";
+
+  // states (US only)
+  const sc = {}, scUn = {};
+  for (const r of records){
+    if (!r.state) continue;
+    const m = P.matchState(r.state);
+    if (m) sc[m] = (sc[m]||0)+1;
+    else { const k = r.state.trim(); scUn[k] = (scUn[k]||0)+1; }
+  }
+  const scMax = Math.max(0, ...Object.values(sc));
+  if (mapsReady) drawChoropleth($("stateMap"), usFeatures, sc);
+  mapLegend($("stateLegend"), scMax);
+  renderChips($("stateChips"), sc, scUn);
+  $("stateEmpty").style.display = records.length ? "none" : "block";
+}
+
+/* ====================================================================
+   SHOWS — fuzzy grouping, top-15 + Other, posters
+   ==================================================================== */
+function levenshtein(a,b){
+  const m=a.length, n=b.length;
+  if (!m) return n; if (!n) return m;
+  let prev = Array.from({length:n+1},(_,i)=>i), cur = new Array(n+1);
+  for (let i=1;i<=m;i++){
+    cur[0]=i;
+    for (let j=1;j<=n;j++){
+      const cost = a[i-1]===b[j-1]?0:1;
+      cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+cost);
+    }
+    [prev,cur] = [cur,prev];
+  }
+  return prev[n];
+}
+const canonKey = s => P.normalize(s).replace(/^the\s+/,"").replace(/\bthe\b/g," ").replace(/\s+/g," ").trim();
+// Adopt a database's canonical title only when it's a near-match (fixes typos,
+// but won't rename an ambiguous one-word entry to an unrelated show).
+function bestName(typed, dbName){
+  if (!dbName) return typed;
+  const a = P.normalize(typed), b = P.normalize(dbName);
+  if (a === b) return dbName;
+  return levenshtein(a,b) <= 2 ? dbName : typed;
+}
+function closeEnough(a,b){
+  if (a===b) return true;
+  if (Math.abs(a.length-b.length) > 3) return false;
+  const d = levenshtein(a,b);
+  const thr = a.length<=4 ? 1 : a.length<=8 ? 2 : 3;
+  return d <= thr;
+}
+function groupShows(){
+  const groups = [];      // {key, items:[raw...], count}
+  let total = 0;
+  for (const r of records){
+    const raw = (r.show||"").trim(); if (!raw) continue;
+    total++;
+    const key = canonKey(raw); if (!key) continue;
+    let g = groups.find(g => closeEnough(g.key, key));
+    if (!g){ g = { key, items:[], count:0 }; groups.push(g); }
+    g.items.push(raw); g.count++;
+  }
+  for (const g of groups){
+    // display label = most frequent exact spelling in the group
+    const tally = {};
+    for (const it of g.items){ const k = it.toLowerCase(); tally[k] = tally[k]||{n:0,label:it}; tally[k].n++; }
+    g.label = Object.values(tally).sort((a,b)=>b.n-a.n)[0].label;
+    g.prob = g.count/total;
+  }
+  groups.sort((a,b)=> b.count-a.count || a.label.localeCompare(b.label));
+  return { groups, total };
+}
+
+function showBarChart(svg, items, total){
+  clearSvg(svg);
+  const W=760, mL=200, mR=78, mT=8, rowH=24, mB=10;
+  const H = mT+mB+items.length*rowH;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const plotW = W-mL-mR;
+  const max = Math.max(1, ...items.map(i=>i.count));
+  items.forEach((it,i)=>{
+    const y = mT + i*rowH;
+    const lab = it.label.length>30 ? it.label.slice(0,29)+"…" : it.label;
+    addEl(svg,"text",{x:mL-8,y:y+rowH/2+4,"text-anchor":"end","font-size":12,
+      fill: it.isOther?"#8a8aa3":"#1b1b2e","font-weight": it.isOther?400:600}, lab);
+    const bw = it.count/max*plotW;
+    addEl(svg,"rect",{x:mL,y:y+3,width:Math.max(2,bw),height:rowH-8,rx:3,
+      fill: it.isOther?"#b9b9d6":"#2d2db4", opacity:.92});
+    addEl(svg,"text",{x:mL+Math.max(2,bw)+7,y:y+rowH/2+4,"font-size":11.5,fill:"#5b5b78"},
+      `${it.count}  ·  ${pct(it.count/total)}`);
+  });
+}
+
+// Posters come from TVmaze (free, no key, TV-specific). Returns {img, name}.
+const posterCache = {};
+async function fetchPoster(title){
+  if (title in posterCache) return posterCache[title];
+  let res = { img:null, name:null };
+  try{
+    let j = await fetch("https://api.tvmaze.com/singlesearch/shows?q="+encodeURIComponent(title))
+      .then(r => r.ok ? r.json() : null);
+    if (!j || !j.image){
+      const arr = await fetch("https://api.tvmaze.com/search/shows?q="+encodeURIComponent(title))
+        .then(r => r.ok ? r.json() : []);
+      const hit = (arr||[]).map(x=>x.show).find(s => s && s.image);
+      if (hit) j = hit;
+    }
+    if (j && j.image) res = { img: j.image.original || j.image.medium, name: j.name || null };
+  } catch(e){}
+  posterCache[title] = res; return res;
+}
+async function renderPosters(top){
+  const box = $("showPosters"); box.innerHTML = "";
+  if (!top.length){ $("showPosterNote").style.display="none"; return; }
+  $("showPosterNote").style.display = "block";
+  for (const g of top){
+    const card = document.createElement("div"); card.className="showcard";
+    const poster = document.createElement("div"); poster.className="poster"; poster.textContent = g.label;
+    const meta = document.createElement("div"); meta.className="meta";
+    meta.innerHTML = `<div class="name">${g.label}</div><div class="prob">${g.count} · ${pct(g.prob)}</div>`;
+    card.appendChild(poster); card.appendChild(meta); box.appendChild(card);
+    fetchPoster(g.label).then(r => {
+      const nm = bestName(g.label, r.name);
+      if (r.img) poster.innerHTML = `<img src="${r.img}" alt="${nm}" loading="lazy">`;
+      meta.querySelector(".name").textContent = nm;   // corrects close typos only
+    });
+  }
+}
+
+function refreshShows(){
+  const { groups, total } = groupShows();
+  const has = total > 0;
+  $("showStats").style.display = has ? "flex" : "none";
+  $("showEmpty").style.display = has ? "none" : "block";
+  if (!has){ clearSvg($("showChart")); $("showPosters").innerHTML=""; $("showPosterNote").style.display="none"; return; }
+
+  $("showN").textContent = total;
+  $("showDistinct").textContent = groups.length;
+  $("showTop").textContent = groups[0].label;
+  $("showTopP").innerHTML = `${pct(groups[0].prob)} <small style="font-size:.7rem;color:#5b5b78">(${groups[0].count}/${total})</small>`;
+
+  // top 15 individually; pool the rest into "Other"
+  const top = groups.slice(0, TOP_SHOWS_BARS);
+  const rest = groups.slice(TOP_SHOWS_BARS);
+  const items = top.map(g => ({label:g.label, count:g.count}));
+  if (rest.length){
+    const otherCount = rest.reduce((s,g)=>s+g.count,0);
+    items.push({ label:`Other (${rest.length} shows)`, count:otherCount, isOther:true });
+  }
+  showBarChart($("showChart"), items, total);
+  renderPosters(groups.slice(0, TOP_SHOWS_POSTERS));
+}
+
+/* ====================================================================
+   PMF BAR CHARTS — commute & Likert
+   ==================================================================== */
+function pmfChart(svg, cats, counts, opts={}){
+  clearSvg(svg);
+  const total = counts.reduce((s,c)=>s+c,0);
+  if (!total) return;
+  const W=760, H=300, mL=52, mR=16, mT=14, mB=46;
+  const plotW=W-mL-mR, plotH=H-mT-mB;
+  const props = counts.map(c=>c/total);
+  const yMax = Math.max(...props, opts.curveMax||0) * 1.18 || 1;
+  const n = cats.length;
+  const bandW = plotW/n;
+  const y = p => mT+plotH-(p/yMax)*plotH;
+
+  addEl(svg,"line",{x1:mL,y1:mT+plotH,x2:mL+plotW,y2:mT+plotH,stroke:"#c9cae0"});
+  addEl(svg,"line",{x1:mL,y1:mT,x2:mL,y2:mT+plotH,stroke:"#c9cae0"});
+  // y ticks (probability)
+  for (let t=0;t<=4;t++){
+    const p = yMax*t/4, yy = y(p);
+    addEl(svg,"line",{x1:mL-4,y1:yy,x2:mL,y2:yy,stroke:"#c9cae0"});
+    addEl(svg,"text",{x:mL-7,y:yy+3,"text-anchor":"end","font-size":10.5,fill:"#5b5b78"}, (p*100).toFixed(0)+"%");
+  }
+  cats.forEach((cat,i)=>{
+    const p = props[i];
+    const bx = mL + i*bandW + bandW*0.16, bw = bandW*0.68;
+    if (p>0) addEl(svg,"rect",{x:bx,y:y(p),width:bw,height:mT+plotH-y(p),rx:3,
+      fill: opts.color||"#2d2db4", opacity:.9});
+    addEl(svg,"text",{x:mL+i*bandW+bandW/2,y:mT+plotH+18,"text-anchor":"middle","font-size":11,fill:"#5b5b78"},
+      String(cat));
+    if (p>0) addEl(svg,"text",{x:mL+i*bandW+bandW/2,y:y(p)-5,"text-anchor":"middle","font-size":10.5,
+      fill:"#1f1f8a","font-weight":600}, (p*100).toFixed(0)+"%");
+  });
+  if (opts.xLabel) addEl(svg,"text",{x:mL+plotW/2,y:H-7,"text-anchor":"middle","font-size":12,fill:"#5b5b78"}, opts.xLabel);
+  // optional smooth curve in (categoryIndex, density) space
+  if (opts.curve){
+    let d="";
+    opts.curve.forEach((pt,i)=>{ const px = mL + (pt.i+0.5)*bandW; d += (i?"L":"M")+px.toFixed(1)+" "+y(pt.y).toFixed(1)+" "; });
+    addEl(svg,"path",{d,fill:"none",stroke:"#c8102e","stroke-width":2.5});
+  }
+}
+
+function refreshCommute(){
+  const vals = records.map(r=>r.commuteHours).filter(v=>Number.isFinite(v));
+  const has = vals.length>0;
+  $("commuteStats").style.display = has?"flex":"none";
+  $("commuteLegend").style.display = has?"flex":"none";
+  $("commuteEmpty").style.display = has?"none":"block";
+  if (!has){ clearSvg($("commuteChart")); return; }
+  const maxH = Math.max(...vals);
+  const cats = []; for (let h=0; h<=maxH; h++) cats.push(h);
+  const counts = cats.map(h => vals.filter(v=>v===h).length);
+  const m = vals.reduce((s,x)=>s+x,0)/vals.length;
+  const sd = Math.sqrt(vals.reduce((s,x)=>s+(x-m)*(x-m),0)/vals.length);
+  // mode
+  let mode=cats[0], best=-1; counts.forEach((c,i)=>{ if(c>best){best=c;mode=cats[i];} });
+  $("commuteMean").innerHTML = `${fmt(m)}<small> hr</small>`;
+  $("commuteSd").innerHTML   = `${fmt(sd)}<small> hr</small>`;
+  $("commuteMode").innerHTML = `${mode}<small> hr</small>`;
+  // normal density overlay (probability mass with bin width 1 ≈ density)
+  let curve=null, curveMax=0;
+  if (sd>0){
+    curve = cats.map((h,i)=>{ const y=normalPdf((h-m)/sd)/sd; curveMax=Math.max(curveMax,y); return {i,y}; });
+  }
+  pmfChart($("commuteChart"), cats, counts, {color:"#2d2db4", xLabel:"commute (hours, rounded up)", curve, curveMax});
+}
+
+function refreshLikert(){
+  const scale = cfg.likertScale || [];
+  const vals = records.map(r=>r.likert).filter(v=>Number.isFinite(v));
+  const has = vals.length>0;
+  $("likertStats").style.display = has?"flex":"none";
+  $("likertEmpty").style.display = has?"none":"block";
+  if (!has){ clearSvg($("likertChart")); return; }
+  const cats = scale.map(s=>s.value);
+  const counts = cats.map(v => vals.filter(x=>x===v).length);
+  const labels = scale.map(s=>`${s.face||""} ${s.label}`);
+  const m = vals.reduce((s,x)=>s+x,0)/vals.length;
+  const agree = vals.filter(x=>x>=4).length/vals.length;
+  $("likertMean").textContent = fmt(m,2);
+  $("likertAgree").textContent = pct(agree);
+  $("likertN").textContent = vals.length;
+  pmfChart($("likertChart"), labels, counts, {color:"#2d2db4", xLabel:""});
+}
+
+/* ====================================================================
+   REFRESH ALL
+   ==================================================================== */
+function refreshAll(){
+  const N = records.length;
+  const span = $("allDays").checked ? "all days" : $("day").value;
+  $("status").textContent = `Section ${$("section").value} · ${span} · ${N} submission${N===1?"":"s"}`;
+  refreshMaps(); refreshShows(); refreshCommute(); refreshLikert();
+}
+refreshAll();
+
+/* ====================================================================
+   QR CODE + STUDENT LINK
+   ==================================================================== */
+const studentUrl = new URL("index.html", window.location.href).href;
+$("studentUrl").value = studentUrl;
+$("qrToggle").addEventListener("click", ()=>{
+  const c = $("qrCard");
+  c.style.display = c.style.display==="none" ? "block" : "none";
+  if (c.style.display==="block")
+    QRCode.toCanvas($("qrCanvas"), studentUrl, {width:320, margin:1, color:{dark:"#1f1f8a", light:"#ffffff"}}).catch(e=>console.error(e));
+});
+$("qrDownload").addEventListener("click", async ()=>{
+  const big = document.createElement("canvas");
+  try{
+    await QRCode.toCanvas(big, studentUrl, {width:1000, margin:2, color:{dark:"#1f1f8a", light:"#ffffff"}});
+    const a = document.createElement("a"); a.href = big.toDataURL("image/png"); a.download = "meet-the-class-QR.png"; a.click();
+  }catch(e){ console.error(e); }
+});
+
+/* ====================================================================
+   TEST DATA (rehearsal — synthesize realistic submissions)
+   ==================================================================== */
+$("testDataBtn").addEventListener("click", ()=>{
+  if (unsub){ unsub(); unsub=null; }
+  const countries = ["United States","United States","United States","United States","United States",
+    "USA","Mexico","India","China","South Korea","Canada","Brazil","Nigeria","UK","Germany","Vietnam","Japan"];
+  const states = ["Utah","Utah","Utah","California","UT","Texas","Idaho","Nevada","Arizona","Colorado",
+    "Washington","New York","Oregon","","",""];
+  const shows = ["The Office","the office","The Ofice","Friends","Friends","Breaking Bad","breaking bad",
+    "Game of Thrones","Game of Thornes","The Last of Us","Stranger Things","Stranger things","The Bear",
+    "Succession","Suits","Suits","Family Guy","Avatar","The Mandalorian","Severance","Severence",
+    "Ted Lasso","Grey's Anatomy","How I Met Your Mother","Modern Family","Brooklyn 99","Peaky Blinders",
+    "The Sopranos","Better Call Saul","Squid Game"];
+  const recs = [];
+  const rnd = a => a[(Math.random()*a.length)|0];
+  for (let i=0;i<48;i++){
+    recs.push({
+      country: rnd(countries), state: rnd(states), show: rnd(shows),
+      commuteHours: Math.min(cfg.maxCommuteHours||12, Math.max(0, Math.round(Math.abs(gaussian())*1.3))),
+      likert: Math.max(1, Math.min(5, 4 + Math.round(gaussian()*0.9))),
+      time: new Date()
+    });
+  }
+  records = recs;
+  $("status").textContent += "  ·  🧪 test data loaded";
+  refreshAll();
+});
+function gaussian(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+/* ====================================================================
+   DOWNLOAD RAW DATA (.md)
+   ==================================================================== */
+$("downloadBtn").addEventListener("click", ()=>{
+  const section = $("section").value;
+  const span = $("allDays").checked ? "all-days" : $("day").value;
+  const L = [`# QAMO 4651 — Section ${section} — Meet the Class (raw data)`,
+    `*${span} · exported ${new Date().toLocaleString()} · ${records.length} responses*`, "",
+    `| # | Country | State/Region | Favorite show | Commute (hr) | Agreement (1–5) |`,
+    `|---|---|---|---|---|---|`];
+  records.forEach((r,i)=> L.push(`| ${i+1} | ${r.country} | ${r.state} | ${r.show} | ${r.commuteHours} | ${r.likert} |`));
+  const blob = new Blob([L.join("\n")], {type:"text/markdown"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `QAMO4651-${section}_meet-the-class_${span}.md`; a.click(); URL.revokeObjectURL(a.href);
+});
+
+/* ====================================================================
+   DOWNLOAD PDF REPORT (clean graphs for slides)
+   ==================================================================== */
+const REPORT_CSS = `
+*{box-sizing:border-box}
+body{font-family:"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;color:#1b1b2e;line-height:1.5;margin:0;padding:0 0 40px}
+.head{padding:30px 44px 16px;border-bottom:3px solid #2d2db4}
+h1{color:#2d2db4;margin:0 0 4px;font-size:25px}
+.subtitle{margin:0 0 8px;font-size:13px;color:#33334d}
+.meta{margin:0;font-size:12px;color:#6a6a85}
+section{padding:16px 44px;break-inside:avoid}
+h2{color:#1f1f8a;font-size:17px;border-bottom:1px solid #e3e4f0;padding-bottom:6px;margin:6px 0 12px;display:flex;align-items:center;gap:10px}
+h2 .num{background:#2d2db4;color:#fff;border-radius:50%;width:24px;height:24px;min-width:24px;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+p{margin:7px 0;font-size:13px}
+.cards{display:flex;gap:12px;margin:10px 0;flex-wrap:wrap}
+.c{flex:1 1 130px;background:#eef0fb;border:1px solid #d9d9f5;border-radius:10px;padding:10px 13px}
+.c .k{display:block;font-size:11px;color:#3a3a66}
+.c .v{display:block;font-size:18px;font-weight:700;margin-top:2px}
+.mapbox{border:1px solid #e3e4f0;border-radius:8px;padding:6px;background:#f8f9ff;margin:6px 0}
+.mapbox svg{width:100%;height:auto;display:block}
+.chartbox{border:1px solid #e3e4f0;border-radius:8px;padding:8px;margin:6px 0}
+.chartbox svg{width:100%;height:auto;display:block}
+.posters{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.pcard{border:1px solid #e3e4f0;border-radius:8px;overflow:hidden}
+.pcard .pi{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;background:#e9e9fb}
+.pcard .pn{padding:5px 6px;font-size:10.5px;font-weight:600;line-height:1.2}
+.pcard .pp{padding:0 6px 6px;font-size:10px;color:#6a6a85}
+.cap{font-size:11px;color:#6a6a85;margin:8px 0 4px}
+table{border-collapse:collapse;width:100%;font-size:11.5px;margin:8px 0}
+th,td{border:1px solid #e0e1ee;padding:5px 8px;text-align:left}
+th{background:#eef0fb;color:#1f1f8a}
+footer{padding:12px 44px;color:#9a9ab0;font-size:10.5px;border-top:1px solid #e3e4f0;margin-top:16px}
+@media print{ @page{margin:12mm} section{padding:12px 0} .head{padding:0 0 12px} footer{padding:12px 0}
+  h2{break-after:avoid} table,.chartbox,.mapbox,.cards,.posters{break-inside:avoid} }`;
+
+function svgOuter(id){ const el=$(id); return el && el.childNodes.length ? el.outerHTML : ""; }
+
+async function buildReportHTML(){
+  const section = $("section").value;
+  const span = $("allDays").checked ? "all days" : $("day").value;
+  const N = records.length;
+  const now = new Date().toLocaleString();
+  const { groups, total } = groupShows();
+
+  // ensure posters are fetched for the top 5
+  const top5 = groups.slice(0, TOP_SHOWS_POSTERS);
+  const posters = await Promise.all(top5.map(g => fetchPoster(g.label)));
+
+  const commuteVals = records.map(r=>r.commuteHours).filter(Number.isFinite);
+  const cMean = commuteVals.length ? commuteVals.reduce((s,x)=>s+x,0)/commuteVals.length : NaN;
+  const likertVals = records.map(r=>r.likert).filter(Number.isFinite);
+  const lMean = likertVals.length ? likertVals.reduce((s,x)=>s+x,0)/likertVals.length : NaN;
+  const agree = likertVals.length ? likertVals.filter(x=>x>=4).length/likertVals.length : NaN;
+
+  const D = [];
+  D.push(`<!doctype html><html><head><meta charset="utf-8"><title>Meet the Class — Section ${section}</title><style>${REPORT_CSS}</style></head><body>`);
+  D.push(`<header class="head"><h1>Meet the Class</h1>
+    <p class="subtitle">QAMO 4651 · Principles of Econometrics — first-day survey</p>
+    <p class="meta">Section ${section} · ${span} · ${N} students · generated ${now}</p></header>`);
+
+  D.push(`<section><h2><span class="num">1</span> Where we're from — the world</h2>
+    <p class="cap">Home country of each student (darker = more students).</p>
+    <div class="mapbox">${svgOuter("worldMap")}</div></section>`);
+
+  D.push(`<section><h2><span class="num">2</span> Where we're from — U.S. states</h2>
+    <p class="cap">Home state for U.S. students (darker = more students).</p>
+    <div class="mapbox">${svgOuter("stateMap")}</div></section>`);
+
+  D.push(`<section><h2><span class="num">3</span> Favorite TV shows</h2>`);
+  if (!total){ D.push(`<p>No responses.</p>`); }
+  else {
+    D.push(`<p>Most popular: <strong>${groups[0].label}</strong> — probability
+      <strong>${pct(groups[0].prob)}</strong> (${groups[0].count} of ${total}). Near-duplicate spellings were grouped.</p>
+      <div class="chartbox">${svgOuter("showChart")}</div>
+      <div class="posters">`);
+    top5.forEach((g,i)=>{
+      const pname = bestName(g.label, posters[i]?.name);
+      const img = posters[i]?.img ? `<img class="pi" src="${posters[i].img}" alt="${pname}">`
+        : `<div class="pi" style="display:flex;align-items:center;justify-content:center;color:#1f1f8a;font-size:11px;text-align:center;padding:6px">${pname}</div>`;
+      D.push(`<div class="pcard">${img}<div class="pn">${pname}</div><div class="pp">${pct(g.prob)} · ${g.count}</div></div>`);
+    });
+    D.push(`</div>`);
+  }
+  D.push(`</section>`);
+
+  D.push(`<section><h2><span class="num">4</span> Commute to campus</h2>
+    <div class="cards"><div class="c"><span class="k">Mean commute</span><span class="v">${fmt(cMean)} hr</span></div></div>
+    <p class="cap">Probability of each commute length (hours, rounded up); red = matched normal density.</p>
+    <div class="chartbox">${svgOuter("commuteChart")}</div></section>`);
+
+  D.push(`<section><h2><span class="num">5</span> &ldquo;${cfg.likertStatement}&rdquo;</h2>
+    <div class="cards">
+      <div class="c"><span class="k">Mean (1–5)</span><span class="v">${fmt(lMean,2)}</span></div>
+      <div class="c"><span class="k">Agree or better</span><span class="v">${pct(agree)}</span></div></div>
+    <p class="cap">Probability of each response on the 5-point agreement scale.</p>
+    <div class="chartbox">${svgOuter("likertChart")}</div></section>`);
+
+  D.push(`<footer>QAMO 4651 · Meet the Class · Section ${section} · ${span}</footer></body></html>`);
+  return D.join("\n");
+}
+
+$("pdfBtn").addEventListener("click", async ()=>{
+  if (records.length===0){ alert("No submissions yet — nothing to export."); return; }
+  $("pdfBtn").disabled = true; const old = $("pdfBtn").textContent; $("pdfBtn").textContent = "Preparing…";
+  try{
+    const html = await buildReportHTML();
+    const w = window.open("", "_blank");
+    if (!w){ alert("Please allow pop-ups for this site, then click 'Download PDF report' again."); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+    let printed=false; const doPrint=()=>{ if(printed)return; printed=true; try{ w.focus(); w.print(); }catch(e){} };
+    w.onload = ()=> setTimeout(doPrint, 600);   // give maps/posters a moment to paint
+    setTimeout(doPrint, 1500);
+  } finally { $("pdfBtn").disabled=false; $("pdfBtn").textContent = old; }
+});
+</script>
+</body>
+</html>

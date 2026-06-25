@@ -1,0 +1,147 @@
+/* QAMO 4651 — First-Day "Meet the Class" Survey — shared styles
+   (same visual theme as the Screen Time Demonstration) */
+
+:root{
+  --blue:#2d2db4;
+  --blue-d:#1f1f8a;
+  --blue-l:#e9e9fb;
+  --crimson:#c8102e;     /* Utah accent */
+  --ink:#1b1b2e;
+  --muted:#5b5b78;
+  --bg:#f4f5fb;
+  --card:#ffffff;
+  --line:#e3e4f0;
+  --good:#1e9e63;
+  --warn:#b3261e;
+  --shadow:0 1px 3px rgba(20,20,60,.08), 0 6px 24px rgba(20,20,60,.06);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink); background:var(--bg);
+  line-height:1.5; -webkit-text-size-adjust:100%;
+}
+
+/* ---------- Page header (mirrors the slide title bar) ---------- */
+.titlebar{
+  background:var(--blue); color:#fff;
+  padding:18px 22px; box-shadow:var(--shadow);
+}
+.titlebar h1{ margin:0; font-size:1.5rem; font-weight:700; letter-spacing:.2px }
+.titlebar .sub{ margin:2px 0 0; opacity:.9; font-size:1rem; font-weight:400 }
+.titlebar .course{ float:right; opacity:.85; font-size:.85rem; font-weight:400 }
+
+.wrap{ max-width:1080px; margin:0 auto; padding:22px }
+
+/* ---------- Cards ---------- */
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:20px 22px; margin:0 0 20px; box-shadow:var(--shadow);
+}
+.card > h2{
+  margin:0 0 4px; font-size:1.15rem; color:var(--blue-d);
+  display:flex; align-items:center; gap:8px;
+}
+.card > h2 .step{
+  font-size:.72rem; font-weight:700; color:#fff; background:var(--blue);
+  border-radius:999px; padding:2px 9px;
+}
+.card > p.note{ margin:2px 0 16px; color:var(--muted); font-size:.92rem }
+
+/* ---------- Controls ---------- */
+label{ font-size:.85rem; color:var(--muted); display:block; margin-bottom:4px }
+input[type=number], input[type=text], select, input[type=date]{
+  font:inherit; padding:9px 11px; border:1px solid var(--line); border-radius:9px;
+  background:#fffdfb; min-width:90px;
+}
+input:focus, select:focus{ outline:2px solid var(--blue-l); border-color:var(--blue) }
+.row{ display:flex; flex-wrap:wrap; gap:14px 18px; align-items:flex-end }
+.btn{
+  font:inherit; font-weight:600; cursor:pointer; border:0; border-radius:10px;
+  background:var(--blue); color:#fff; padding:10px 16px; transition:filter .12s;
+}
+.btn:hover{ filter:brightness(1.08) }
+.btn:active{ filter:brightness(.95) }
+.btn.ghost{ background:#fff; color:var(--blue); border:1.5px solid var(--blue) }
+.btn.crimson{ background:var(--crimson) }
+.btn:disabled{ opacity:.5; cursor:not-allowed; filter:none }
+
+/* ---------- Stat tiles ---------- */
+.stats{ display:flex; flex-wrap:wrap; gap:14px; margin-top:4px }
+.stat{
+  flex:1 1 150px; background:var(--blue-l); border-radius:12px; padding:14px 16px;
+  border:1px solid #d9d9f5;
+}
+.stat .k{ font-size:.8rem; color:var(--blue-d); font-weight:600 }
+.stat .v{ font-size:1.5rem; font-weight:700; margin-top:2px }
+.stat .v small{ font-size:.8rem; color:var(--muted); font-weight:500 }
+.stat.compare{ background:#fff; border:1px dashed #c9c9e6 }
+
+/* ---------- Tables ---------- */
+table{ border-collapse:collapse; width:100%; font-size:.9rem; margin-top:6px }
+th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--line) }
+th{ color:var(--blue-d); font-size:.82rem; text-transform:uppercase; letter-spacing:.4px }
+tbody tr:nth-child(even){ background:#fafaff }
+
+/* ---------- SVG chart wrapper ---------- */
+.chart{ width:100%; overflow:visible }
+
+/* ---------- Maps ---------- */
+.mapwrap{ width:100%; background:#f8f9ff; border:1px solid var(--line); border-radius:12px; padding:6px }
+.mapwrap svg{ width:100%; height:auto; display:block }
+.geo-empty{ fill:#e7e8f4; stroke:#ffffff; stroke-width:.5 }
+.geo-zero{ fill:#e7e8f4; stroke:#ffffff; stroke-width:.4 }
+.geo-on{ stroke:#ffffff; stroke-width:.5 }
+.geo-on:hover{ stroke:var(--ink); stroke-width:.9 }
+.maplegend{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:.82rem; color:var(--muted); margin-top:8px }
+.maplegend .scale{ display:flex; height:12px; border-radius:3px; overflow:hidden; border:1px solid var(--line) }
+.maplegend .scale span{ width:26px; height:100%; display:block }
+
+/* place-count chip lists */
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px }
+.chip{ display:inline-flex; align-items:center; gap:7px; background:var(--blue-l);
+  color:var(--blue-d); border:1px solid #d9d9f5; border-radius:999px; padding:4px 12px; font-size:.86rem; font-weight:600 }
+.chip .n{ background:var(--blue); color:#fff; border-radius:999px; padding:1px 8px; font-size:.78rem }
+.chip.unmatched{ background:#fff5f5; color:var(--warn); border-color:#f3c9c9 }
+
+/* ---------- Show posters ---------- */
+.shows{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-top:14px }
+.showcard{ border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; display:flex; flex-direction:column }
+.showcard .poster{ width:100%; aspect-ratio:2/3; background:linear-gradient(135deg,#e9e9fb,#d9d9f5);
+  display:flex; align-items:center; justify-content:center; color:var(--blue-d); font-weight:700; text-align:center; padding:10px; font-size:.95rem }
+.showcard .poster img{ width:100%; height:100%; object-fit:cover; display:block }
+.showcard .meta{ padding:9px 11px }
+.showcard .meta .name{ font-weight:700; font-size:.92rem; color:var(--ink); line-height:1.25 }
+.showcard .meta .prob{ font-size:.82rem; color:var(--muted); margin-top:3px }
+.showcard .rank{ position:absolute; }
+
+/* ---------- Likert ---------- */
+.likert{ display:flex; flex-direction:column; gap:10px; margin-top:4px }
+.likert .opt{
+  display:flex; align-items:center; gap:12px; border:1.5px solid var(--line);
+  border-radius:11px; padding:12px 14px; cursor:pointer; transition:border-color .12s, background .12s;
+}
+.likert .opt:hover{ border-color:var(--blue) }
+.likert .opt.sel{ border-color:var(--blue); background:var(--blue-l) }
+.likert .opt input{ accent-color:var(--blue); width:18px; height:18px }
+.likert .opt .face{ font-size:1.35rem; width:1.6rem; text-align:center }
+.likert .opt .txt{ font-weight:600; font-size:.96rem }
+
+/* ---------- Misc ---------- */
+.muted{ color:var(--muted) }
+.pill{ display:inline-block; background:var(--blue-l); color:var(--blue-d);
+  border-radius:999px; padding:3px 11px; font-size:.85rem; font-weight:600 }
+.empty{ color:var(--muted); font-style:italic; padding:18px 0 }
+math, .mathy{ font-style:italic; font-family:Georgia,"Times New Roman",serif }
+.legend{ display:flex; gap:16px; flex-wrap:wrap; font-size:.82rem; color:var(--muted); margin-top:6px }
+.legend .sw{ display:inline-block; width:14px; height:10px; border-radius:2px; vertical-align:middle; margin-right:5px }
+hr.soft{ border:0; border-top:1px solid var(--line); margin:18px 0 }
+
+/* anonymity / warning banners on the student page */
+.banner{ border-radius:10px; padding:11px 14px; font-size:.9rem; margin:0 0 14px }
+.banner.anon{ background:#eef7f0; border:1px solid #cfe9d8; color:#1d6b41 }
+.banner.warn{ background:#fdecec; border:1px solid #f3c9c9; color:var(--warn); display:none }
+.field{ margin-bottom:16px }
+.field .hint{ font-size:.8rem; color:var(--muted); margin:4px 0 0 }
